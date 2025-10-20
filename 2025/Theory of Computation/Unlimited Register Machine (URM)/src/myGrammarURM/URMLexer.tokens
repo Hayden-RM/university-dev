@@ -1,0 +1,14 @@
+T__0=1
+T__1=2
+T__2=3
+CONFIG=4
+JUMP=5
+SUCC=6
+ZERO=7
+TRANSFER=8
+INT=9
+LINE_COMMENT=10
+WS=11
+','=1
+']'=2
+')'=3

@@ -1,0 +1,150 @@
+<!--
+Name: Hayden Richard-Marsters
+Email: qjn4504@autuni.ac.nz
+SID: 21152003
+
+File: booking.html
+Description: client-side taxi booking page, client to fill out booking request form
+-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utf-8" />
+    <link rel="stylesheet" href="styles2.css" />
+    <title>Web Dev Assignment 2</title>
+  </head>
+  <body>
+    <div class="content">
+      <a href="index.html" class="btn">Return to Home</a>
+      <a href="admin.html" class="btn">Admin</a>
+
+      <h1>Taxi Booking Form</h1>
+
+      <form id="bookingForm">
+        <!-- *** Booking Form Input *** -->
+        <p>* indicates required fields</p>
+
+        <!--Customer Name-->
+        <div class="form-group">
+          <label for="cname">Customer Name*:</label>
+          <input type="text" name="cname" id="cname" required />
+        </div>
+        <small class="hint">Customer name is required</small><br />
+
+        <br />
+
+        <!--Phone Number-->
+        <div class="form-group">
+          <label for="phone">Phone Number*:</label>
+          <input type="text" name="phone" id="phone" required />
+        </div>
+        <small class="hint"
+          >Phone number is required (must be 10-12 digits, numerical
+          only)</small
+        ><br />
+
+        <br />
+
+        <!--Unit Number (OPTIONAL field)-->
+        <div class="form-group">
+          <label for="unumber">Unit Number:</label>
+          <input type="text" name="unumber" id="unumber" />
+        </div>
+
+        <br />
+
+        <!--Street Number-->
+        <div class="form-group">
+          <label for="snumber">Street Number*:</label>
+          <input type="text" name="snumber" id="snumber" required />
+        </div>
+        <small class="hint"
+          >Street Number is required (Numerical values only)</small
+        ><br />
+
+        <br />
+
+        <!--Street Name-->
+        <div class="form-group">
+          <label for="stname">Street Name*:</label>
+          <input type="text" name="stname" id="stname" required />
+        </div>
+        <small class="hint">Street Name is required</small><br />
+
+        <br />
+
+        <!--Suburb (Optional field)-->
+        <div class="form-group">
+          <label for="sbname">Suburb:</label>
+          <input type="text" name="sbname" id="sbname" />
+        </div>
+
+        <br />
+
+        <!--Destination Suburb (Optional field)-->
+        <div class="form-group">
+          <label for="dsbname">Destination Suburb:</label>
+          <input type="text" name="dsbname" id="dsbname" />
+        </div>
+
+        <br />
+
+        <!-- Date -->
+        <div class="form-group">
+          <label for="date">Date*:</label>
+          <input type="text" id="date" name="date" required />
+        </div>
+        <small class="hint"
+          >Pick-up date is required (Date Format: DD/MM/YYYY)</small
+        >
+
+        <br />
+
+        <!--Pick up time-->
+        <div class="form-group">
+          <td><label for="time">Pickup Time*:</label></td>
+          <td><input type="time" id="time" name="time" required /></td>
+        </div>
+        <small class="hint">Pick-up time is required (HH:MM 24h format)</small>
+
+        <br />
+
+        <!-- Submit button -->
+        <p>
+          <input type="submit" value="Send Request" />
+        </p>
+      </form>
+
+      <div id="reference"></div>
+
+      <!-- Script to set current date and time as default for respective form fields above-->
+      <script>
+        const today = new Date();
+
+        // format date dd/mm/yyyy
+        const day = String(today.getDate()).padStart(2, "0");
+        const month = String(today.getMonth() + 1).padStart(2, "0");
+        const year = today.getFullYear();
+
+        const formattedDate = `${day}/${month}/${year}`;
+        document.getElementById("date").value = formattedDate;
+
+        //Format time to hh:mm
+        const hours = String(today.getHours()).padStart(2, "0");
+        const mins = String(today.getMinutes()).padStart(2, "0");
+
+        const formattedTime = `${hours}:${mins}`;
+        document.getElementById("time").value = formattedTime;
+      </script>
+
+      <footer>
+        <p class="boxed">
+          Hayden Richard-Marsters - 21152003 <br />
+          <a href="mailto: qjn4504@autuni.ac.nz">qjn4504@autuni.ac.nz</a>
+        </p>
+      </footer>
+    </div>
+    <script src="booking.js"></script>
+  </body>
+</html>

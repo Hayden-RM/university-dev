@@ -1,0 +1,42 @@
+<!-- 
+Name: Hayden Richard-Marsters
+SID: 21152003
+email: qjn4504@autuni.ac.nz
+
+File: admin.html
+Description: Admin interface to view and assign bookings
+-->
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <link rel="stylesheet" href="styles2.css" />
+    <title>Admin - CabsOnline</title>
+  </head>
+  <body>
+    <div class="content">
+      <a href="index.html" class="btn">Return to Home</a>
+      <a href="booking.html" class="btn">Book a Taxi</a>
+
+      <h1>Admin - Manage Bookings</h1>
+
+      <!-- Search Form -->
+      <label for="bsearch">Booking Ref # (optional):</label>
+      <input type="text" name="bsearch" id="bsearch" />
+      <input
+        type="button"
+        name="sbutton"
+        value="Search Bookings"
+        id="sbutton"
+      />
+
+      <br /><br />
+
+      <!-- Results Table -->
+      <div class="content" id="results"></div>
+    </div>
+
+    <script src="admin.js"></script>
+  </body>
+</html>

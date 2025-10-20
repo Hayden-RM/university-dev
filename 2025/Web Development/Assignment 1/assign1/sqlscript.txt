@@ -1,0 +1,34 @@
+-- Create status table
+CREATE TABLE IF NOT EXISTS status (
+                                    stcode VARCHAR(5) PRIMARY KEY,
+                                    status TEXT NOT NULL,
+                                    share VARCHAR(20),
+                                    date DATE NOT NULL,
+                                    permission TEXT
+                                    );
+
+
+-- Insert a new status form submission to status table
+INSERT INTO status (stcode, status, share, date, permission) 
+VALUES (?, ?, ?, ?, ?);
+
+
+-- Find status keyword match
+SELECT stcode, status, share, date, permission
+                FROM status
+                WHERE LOWER(status) LIKE ?
+                ORDER BY date ASC;
+
+
+-- Drop database
+DROP TABLE IF EXISTS status;
+
+
+-- Check if table exists
+SHOW TABLES LIKE 'status';
+
+-- Check for duplicate status code
+SELECT stcode 
+FROM status 
+WHERE stcode = ?;
+

@@ -1,0 +1,27 @@
+<hmtl>
+  <head>
+    <meta charset="UTF-8" />
+    <title>Search Status Form</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="content">
+      <!-- Search status form-->
+      <h1>Status Searching System</h1>
+
+      <form action="searchstatusprocess.php" method="GET">
+        <div class="form-group">
+          <label for="search">Status: </label>
+          <input type="text" name="Search" id="search" required />
+          <input type="submit" value="Show Results" />
+          <!-- hovering hint over input to display format-->
+          <small class="hint">
+            Enter keywords you wish to find matches within status database
+          </small>
+        </div>
+      </form>
+
+      <p><a href="index.html" class="btn">Return to Home Page</a></p>
+    </div>
+  </body>
+</hmtl>
