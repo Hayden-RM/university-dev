@@ -1,0 +1,96 @@
+<html>
+  <head>
+    <meta http-equiv="content-type" content="text/html; charset=utd-8" />
+    <title>About Page</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="content">
+      <h1>About this Assignment</h1>
+
+      <!-- assignment questions answers in bullet point format-->
+      <h3>
+        What special features have you done or attempted in creating the
+        website?
+      </h3>
+      <ul>
+        <li>
+          Implemted server-side validation for status code format and duplicate
+          verification to ensure status codes are uniquely indetifiable and
+          formatted in a standardized manner that limits human/input error.
+        </li>
+        <li>
+          Built keyword search with case-insensitive matching to ensure search
+          input handles both mixed and non-mixed case lettering.
+        </li>
+        <li>
+          Implemented a count feature in status search results to enhance
+          readability of larger keyword matching results.
+        </li>
+      </ul>
+      <hr />
+      <h3>Which part(s) did you have trouble with?</h3>
+      <ul>
+        <li>
+          Handling date parsing in dd/mm/yyyy and converting to MySQL's
+          YYYY-MM-DD format within post status functionality, then converting
+          from MySQL format (YYYY-MM-DD) to e.g. September 3, 2026 within the
+          search status functionality.
+        </li>
+        <li>
+          Handling the format specifications within the post status page; even
+          when inputting correctly formatted status an error message would
+          appear that the format is invalid - this was due to incorrect
+          parameters within poststatusform.php when defining the input.
+        </li>
+      </ul>
+      <hr />
+      <h3>What would you like to do better next-time?</h3>
+      <ul>
+        <li>
+          Improve modularity of the code to enhance scalability prospects by
+          avoiding repetitive logic.
+        </li>
+        <li>
+          Enhance user-experience by incorporating human-computer interaction
+          principles, user research, and other HCI components to optimize the
+          functionality of the website.
+        </li>
+        <li>
+          Reframe logic to handle larger datasets in more sensical ways; for
+          example: incorporating a ranking system within the search function to
+          return the most relevant results at the top, instead of the current
+          state by which it just orders the returned search results by date.
+        </li>
+      </ul>
+      <hr />
+      <h3>
+        What have you learnt along the way? Did you use any references or
+        resources during this project? if so, please incliude the sources.
+      </h3>
+      <ul>
+        <li>
+          How to effectively handle date formatting in conjunction with input
+          forms and MySQL database handling.
+        </li>
+        <li>
+          How to detect table existence or search queries parsed through PHP
+          code to MySQL databases
+        </li>
+        <li>
+          Resources used include the PHP Manual for PHP documentation and
+          fundamental understanding, GeeksforGeeks.org for quick and simple PHP,
+          MySQL, and HTML breakdowns of syntax, functionality, and
+          implementation, and StackOverflow for CSS styling rules.
+        </li>
+      </ul>
+      <hr />
+      <!---Reset Database button-->
+      <form action="resetdb.php" method="POST">
+        <button type="submit" class="btn">Reset Database</button>
+      </form>
+
+      <p><a href="index.html" class="btn">Return to Home Page</a></p>
+    </div>
+  </body>
+</html>

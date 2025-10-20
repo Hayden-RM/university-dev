@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <h2>Task a</h2>
+
+    <script>
+      let total = 0;
+      for (let i = 1; i <= 10; i++) {
+        total += i;
+        document.write("Subtotal after adding " + i + ": " + total + "<br>");
+      }
+    </script>
+
+    <h2>Task b</h2>
+
+    <button onclick="changeColor('darkred')">Dark Red</button>
+    <button onclick="changeColor('lightblue')">Light Blue</button>
+    <button onclick="changeColor('pink')">Pink</button>
+
+    <script>
+      function changeColor(color) {
+        document.bgColor = color;
+      }
+    </script>
+
+    <h2>Task c</h2>
+    <a href="domPrac.htm">domPrac.htm</a>
+
+    <h2>Task d</h2>
+    <script>
+      function printWords() {
+        let input = prompt("Enter a sentence with words separated by spaces:");
+        let words = input.split(" ");
+        for (let word of words) {
+          if (word.trim() === "") continue;
+          document.write(word + "<br>");
+        }
+      }
+      printWords();
+    </script>
+
+    <h2>Task e</h2>
+
+    <script>
+      class EmailRecord {
+        constructor(name, email) {
+          this.name = name;
+          this.email = email;
+        }
+
+        print() {
+          document.write("</br>" + this.name + " | " + this.email);
+        }
+      }
+      let person1 = new EmailRecord("John John", "john@autuni.com");
+      let person2 = new EmailRecord("Jon Jones", "bob@aut.com");
+
+      person1.print();
+      person2.print();
+
+      // Using JSON to create a similar object
+      let json = '{"name": "Charlie", "email": "charlie@autuni.ac.nz"}';
+      let person3 = JSON.parse(json);
+
+      document.write("</br>Is person3 an instance of EmailRecord? ");
+      document.write(person3 instanceof EmailRecord);
+
+      // Convert to class object
+      let realPerson3 = Object.assign(new EmailRecord(), person3);
+      document.write("</br>");
+      realPerson3.print();
+
+      document.write("</br>Is realPerson3 an instance of EmailRecord? ");
+      document.write(realPerson3 instanceof EmailRecord);
+    </script>
+  </body>
+</html>
