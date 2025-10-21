@@ -1,4 +1,4 @@
-< Key Projects >
+< Core Projects >
 - Interpreter [ 2025 / Programming Languages ]
 - Unlimited Register Machine (URM) [ 2025 / Theory of Computation ]
 - Currency Arbitrage Detection and Optimal Conversion [ 2025 / Algorithm Design and Analysis ]
