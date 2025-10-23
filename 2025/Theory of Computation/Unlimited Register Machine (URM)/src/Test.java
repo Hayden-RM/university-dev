@@ -21,6 +21,8 @@ public class Test {
         String src;
         if (args.length == 0) {
 
+            // OLD TESTS FROM ASSIGNMENT 1
+            /*
             // Provided Test * Testing URM + specificity such as case insensitivity
             runTest("Provided test : Expectation -> regs[2,9,2]", """
                                                                             conFig[9,7]
@@ -31,12 +33,28 @@ public class Test {
                                                                             JuMp(1,1,2)
                                                                             TrAnSfEr(3,1)
                                                                             """ );
-
+            */
+        
+            /* 
             // Non-terminating test * Testing a non-terminating URM that does not crash
             runTest("Non-terminating test : Expectation -> does not terminate (but does not crash)", """
                                                                                                                 succ(1)
                                                                                                                 jump(1,1,1)
                                                                                                                 """);
+            */
+            // END OF OLD TESTS
+
+            // Example 2.1.
+            runTest("Example 2.1.", """ 
+                                                config[2, 3, 0, 0]
+                                                jump(1,2,6)
+                                                succ(2)
+                                                succ(3)
+                                                jump(1,2,6)
+                                                jump(1,1,2)
+                                                transfer(3,1)
+                                                """
+                                                );
 
 
 
