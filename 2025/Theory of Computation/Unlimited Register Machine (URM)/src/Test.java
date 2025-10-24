@@ -45,14 +45,15 @@ public class Test {
             // END OF OLD TESTS
 
             // Example 2.1.
-            runTest("Example 2.1.", """ 
-                                                config[2, 3, 0, 0]
-                                                jump(1,2,6)
-                                                succ(2)
-                                                succ(3)
-                                                jump(1,2,6)
-                                                jump(1,1,2)
-                                                transfer(3,1)
+            runTest("Ex. 3.3. 4 example -> T(3, 4) -> initial config:[3, 7, 4, 6] -> expectation: [3, 3, 0]", """ 
+                                                config[3, 7, 4, 6]
+                                            zero(4)        
+                                            zero(5)        
+                                            jump(5, 3, 7)
+                                            succ(4)       
+                                            succ(5)        
+                                            jump(1, 1, 3)
+                                            zero(5)
                                                 """
                                                 );
 

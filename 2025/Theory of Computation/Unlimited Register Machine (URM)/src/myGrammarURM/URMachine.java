@@ -64,7 +64,7 @@ public final class URMachine {
             try {
 
                 // *** Added a delay to step through at human speeds ***
-                Thread.sleep(250);
+                Thread.sleep(0);
                 if (trace) System.out.printf("PC=%d regs=%s next=%s%n",
                         pc + 1, regs, formatNext());
 
