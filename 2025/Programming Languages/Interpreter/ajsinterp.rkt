@@ -19,10 +19,13 @@
       (let loop ((ss stmts) (rho init-env) (outs '()))
         (if (null? ss)
             (reverse outs)
-            (let* ([st   (eval-statement (car ss) rho)]
-                   [rho2 (step-env st)]
-                   [out? (step-out st)])
-              (loop (cdr ss) rho2 (if out? (cons out? outs) outs))))))))
+            (let* ([result (eval-statement (car ss) rho)])
+              (if (return-exn? result)
+                  ;; If we got a return exception, extract the value
+                  (list (return-exn-value result))
+                  (let ([rho2 (step-env result)]
+                        [out? (step-out result)])
+                    (loop (cdr ss) rho2 (if out? (cons out? outs) outs))))))))))
 
 (define (eval-statement s rho)
   (cases statement s
@@ -30,25 +33,30 @@
       (let ([v (eval-expr e rho)])
         (step (env-extend1 rho id v) #f)))
     (fun-stmt (id params body)
-      (let ([closure (V-clos params body rho)])
+      ;; Create recursive closure
+      (let ([closure (V-rec-clos id params body rho)])
         (step (env-extend1 rho id closure) #f)))
     (return-stmt (e)
-      (step rho (eval-expr e rho)))
+      (make-return-exn (eval-expr e rho)))
     (expr-stmt (e)
       (step rho (eval-expr e rho)))))
 
-;; ================= Blocks =================
+;; ================= Blocks with Return Handling =================
 
 (define (eval-block b rho)
   (cases block b
     (a-block (stmts)
-      (let loop ((ss stmts) (current-env rho) (last-out #f))
+      (let loop ((ss stmts) (current-env rho) (last-out (V-null)))
         (if (null? ss)
             last-out
-            (let* ([st (eval-statement (car ss) current-env)]
-                   [new-env (step-env st)]
-                   [out (step-out st)])
-              (loop (cdr ss) new-env (or out last-out))))))))
+            (let ([result (eval-statement (car ss) current-env)])
+              (cond
+                [(return-exn? result) 
+                 (return-exn-value result)]  ; propagate return value
+                [else
+                 (let ([new-env (step-env result)]
+                       [out (step-out result)])
+                   (loop (cdr ss) new-env (if out out last-out)))])))))))
 
 ;; ================= Expressions =================
 
@@ -199,8 +207,18 @@
              [closure-env (caddr closure-parts)]
              [arg-vals (map (lambda (arg) (eval-expr arg rho)) args)])
         (if (= (length params) (length arg-vals))
-            (let ([result (eval-block body (env-extend* closure-env params arg-vals))])
-              (eval-call-tail result next-tail rho))
+            ;; Handle recursive closures
+            (cases ajsval func
+              (rec-closure-val (func-name ps body closure-env)
+                ;; For recursive functions: add the function itself to the new environment
+                (let ([new-env (env-extend* closure-env params arg-vals)])
+                  (let ([rec-env (env-extend1 new-env func-name func)])
+                    (let ([result (eval-block body rec-env)])
+                      (eval-call-tail result next-tail rho)))))
+              (else
+                ;; Regular closure
+                (let ([result (eval-block body (env-extend* closure-env params arg-vals))])
+                  (eval-call-tail result next-tail rho))))
             (eopl:error 'eval-call-tail "Arity mismatch: expected ~a args, got ~a" 
                        (length params) (length arg-vals)))))))
 
