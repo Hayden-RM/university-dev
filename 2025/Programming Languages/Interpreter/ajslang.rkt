@@ -29,7 +29,11 @@
     (program ((arbno statement)) a-program)
 
     (statement ("const" identifier "=" expr ";") const-stmt)
-    (statement (expr ";")                        expr-stmt)
+    (statement ("function" identifier "(" (separated-list identifier ",") ")" block) fun-stmt)
+    (statement ("return" expr ";") return-stmt)
+    (statement (expr ";") expr-stmt)
+
+    (block ("{" (arbno statement) "}") a-block)
 
     (expr (logical-or) expr-wrap)
 
@@ -65,23 +69,32 @@
     (add-op-tail () add-done)
 
     ;; Multiplicative
-    (multiplicative-exp (factor mul-op-tail) mul-node)
-    (mul-op-tail ("*" factor mul-op-tail) mul-more)
-    (mul-op-tail ("/" factor mul-op-tail) div-more)
+    (multiplicative-exp (unary-exp mul-op-tail) mul-node)
+    (mul-op-tail ("*" unary-exp mul-op-tail) mul-more)
+    (mul-op-tail ("/" unary-exp mul-op-tail) div-more)
     (mul-op-tail () mul-done)
 
-    ;; Factor (with unary +/-)
-    (factor (number)            const-exp)
-    (factor (identifier)        var-exp)
-    (factor ("(" expr ")")      paren-exp)
-    (factor ("-" factor)        neg-exp)
-    (factor ("+" factor)        pos-exp)
+    ;; Unary expressions (+, -)
+    (unary-exp (primary-exp) simple-unary)
+    (unary-exp ("-" unary-exp) neg-exp)
+    (unary-exp ("+" unary-exp) pos-exp)
+
+    ;; Primary expressions - the key is to handle calls at this level
+    (primary-exp (atom-exp call-tail) call-exp)
+
+    ;; Call tail for function application
+    (call-tail () no-call)
+    (call-tail ("(" (separated-list expr ",") ")" call-tail) more-call)
+
+    ;; Atom expressions (cannot be followed by function calls)
+    (atom-exp (number) const-atom)
+    (atom-exp (identifier) var-atom)
+    (atom-exp ("(" expr ")") paren-atom)
   ))
 
 (sllgen:make-define-datatypes ajs-lexical-spec ajs-grammar)
 
 (define scan  (sllgen:make-string-scanner ajs-lexical-spec ajs-grammar))
 (define parse (sllgen:make-string-parser  ajs-lexical-spec ajs-grammar))
-
 
 (display "parser built successfully")
