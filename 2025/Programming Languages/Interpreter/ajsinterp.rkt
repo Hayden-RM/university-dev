@@ -1,100 +1,218 @@
 #lang eopl
-(require eopl)
+(require "ajslang.rkt"
+         "ajsdata-structures.rkt")
 (provide (all-defined-out))
 
-;; ========= 1) LEXICAL SPEC =========
-(define ajs-lexical-spec
-  '((whitespace (whitespace) skip)
-    (comment ("//" (arbno (not #\newline))) skip)
+;; initial environment
+(define init-env (empty-env))
 
-    ;; identifiers -> symbol
-    (identifier
-     ((or letter #\_ #\$)
-      (arbno (or letter digit #\_ #\$)))
-     symbol)
+;; small helper "step" pair for statement results
+(define (step env out?) (cons env out?))
+(define (step-env st)   (car st))
+(define (step-out st)   (cdr st))
 
-    ;; numbers (integer/ decimals)
-    (number (digit (arbno digit)) number)
-    (number (digit (arbno digit) #\. digit (arbno digit)) number)
-    (number (#\. digit (arbno digit)) number)
-    (number (digit (arbno digit) #\.) number)
-    ;; simple strings (kept for later use)
-    (string
-     (#\" (arbno (not #\")) #\")
-     string)))
+;; ================= Program / Statements =================
 
-;; ========= 2) GRAMMAR (LL(1)) =========
-(define ajs-grammar
-  '(
-    (program ((arbno statement)) a-program)
+(define (eval-program pgm)
+  (cases program pgm
+    (a-program (stmts)
+      (let loop ((ss stmts) (rho init-env) (outs '()))
+        (if (null? ss)
+            (reverse outs)
+            (let* ([st   (eval-statement (car ss) rho)]
+                   [rho2 (step-env st)]
+                   [out? (step-out st)])
+              (loop (cdr ss) rho2 (if out? (cons out? outs) outs))))))))
 
-    (statement ("const" identifier "=" expr ";") const-stmt)
-    (statement ("function" identifier "(" (separated-list identifier ",") ")" block) fun-stmt)
-    (statement ("return" expr ";") return-stmt)
-    (statement (expr ";") expr-stmt)
+(define (eval-statement s rho)
+  (cases statement s
+    (const-stmt (id e)
+      (let ([v (eval-expr e rho)])
+        (step (env-extend1 rho id v) #f)))
+    (fun-stmt (id params body)
+      (let ([closure (V-clos params body rho)])
+        (step (env-extend1 rho id closure) #f)))
+    (return-stmt (e)
+      (step rho (eval-expr e rho)))
+    (expr-stmt (e)
+      (step rho (eval-expr e rho)))))
 
-    (block ("{" (arbno statement) "}") a-block)
+;; ================= Blocks =================
 
-    (expr (logical-or) expr-wrap)
+(define (eval-block b rho)
+  (cases block b
+    (a-block (stmts)
+      (let loop ((ss stmts) (current-env rho) (last-out #f))
+        (if (null? ss)
+            last-out
+            (let* ([st (eval-statement (car ss) current-env)]
+                   [new-env (step-env st)]
+                   [out (step-out st)])
+              (loop (cdr ss) new-env (or out last-out))))))))
 
-    ;; Conditional expression - handled in logical-or
-    (logical-or (logical-and lor-tail) lor-node)
-    (lor-tail ("||" logical-and lor-tail) lor-more)
-    (lor-tail ("?" expr ":" logical-or) cond-exp)  ; Conditional as part of logical-or
-    (lor-tail () lor-done)
+;; ================= Expressions =================
 
-    ;; Logical AND
-    (logical-and (equality land-tail) land-node)
-    (land-tail ("&&" equality land-tail) land-more)
-    (land-tail () land-done)
+;; expr -> (expr-wrap logical-or)
+(define (eval-expr e rho)
+  (cases expr e
+    (expr-wrap (lorE) (eval-logical-or lorE rho))))
 
-    ;; Equality
-    (equality (relational eq-tail) eq-node)
-    (eq-tail ("===" relational eq-tail) eqe-more)
-    (eq-tail ("!==" relational eq-tail) eqn-more)
-    (eq-tail () eq-done)
+;; logical-or -> (lor-node logical-and lor-tail)
+(define (eval-logical-or lorE rho)
+  (cases logical-or lorE
+    (lor-node (landE tail)
+      (eval-lor-tail (eval-logical-and landE rho) tail rho))))
 
-    ;; Relational
-    (relational (additive-exp rel-tail) rel-node)
-    (rel-tail (">"  additive-exp rel-tail) gt-more)
-    (rel-tail ("<"  additive-exp rel-tail) lt-more)
-    (rel-tail (">=" additive-exp rel-tail) ge-more)
-    (rel-tail ("<=" additive-exp rel-tail) le-more)
-    (rel-tail () rel-done)
+;; lor-tail:
+;;   - lor-more: "||" logical-and lor-tail
+;;   - cond-exp: "?" expr ":" logical-or
+;;   - lor-done: ε
+(define (eval-lor-tail acc tail rho)
+  (cases lor-tail tail
+    (lor-done () acc)
+    (lor-more (landE rest)
+      (if (truthy? acc)
+          (eval-lor-tail acc rest rho)
+          (eval-lor-tail (eval-logical-and landE rho) rest rho)))
+    (cond-exp (thenE elseLOR)
+      (if (truthy? acc)
+          (eval-expr thenE rho)
+          (eval-logical-or elseLOR rho)))))
 
-    ;; Additive
-    (additive-exp (multiplicative-exp add-op-tail) add-node)
-    (add-op-tail ("+" multiplicative-exp add-op-tail) add-more)
-    (add-op-tail ("-" multiplicative-exp add-op-tail) sub-more)
-    (add-op-tail () add-done)
+;; logical-and -> (land-node equality land-tail)
+(define (eval-logical-and landE rho)
+  (cases logical-and landE
+    (land-node (eqE tail)
+      (eval-land-tail (eval-equality eqE rho) tail rho))))
 
-    ;; Multiplicative
-    (multiplicative-exp (unary-exp mul-op-tail) mul-node)
-    (mul-op-tail ("*" unary-exp mul-op-tail) mul-more)
-    (mul-op-tail ("/" unary-exp mul-op-tail) div-more)
-    (mul-op-tail () mul-done)
+;; land-tail:
+;;   - land-more: "&&" equality land-tail
+;;   - land-done: ε
+(define (eval-land-tail acc tail rho)
+  (cases land-tail tail
+    (land-done () acc)
+    (land-more (eqE rest)
+      (if (truthy? acc)
+          (eval-land-tail (eval-equality eqE rho) rest rho)
+          (eval-land-tail acc rest rho)))))
 
-    ;; Unary expressions (+, -)
-    (unary-exp (primary-exp) simple-unary)
-    (unary-exp ("-" unary-exp) neg-exp)
-    (unary-exp ("+" unary-exp) pos-exp)
+;; equality -> (eq-node relational eq-tail)
+(define (eval-equality eqE rho)
+  (cases equality eqE
+    (eq-node (relE tail)
+      (eval-eq-tail (eval-relational relE rho) tail rho))))
 
-    ;; Primary expressions - the key is to handle calls at this level
-    (primary-exp (atom-exp call-tail) call-exp)
+;; eq-tail: (===(relational) | !==(relational))*
+(define (eval-eq-tail acc tail rho)
+  (cases eq-tail tail
+    (eq-done () acc)
+    (eqe-more (relE rest)
+      (eval-eq-tail (ajs=== acc (eval-relational relE rho)) rest rho))
+    (eqn-more (relE rest)
+      (eval-eq-tail (ajs!== acc (eval-relational relE rho)) rest rho))))
 
-    ;; Call tail for function application
-    (call-tail () no-call)
-    (call-tail ("(" (separated-list expr ",") ")" call-tail) more-call)
+;; relational -> (rel-node additive-exp rel-tail)
+(define (eval-relational relE rho)
+  (cases relational relE
+    (rel-node (addE tail)
+      (eval-rel-tail (eval-additive addE rho) tail rho))))
 
-    ;; Atom expressions (cannot be followed by function calls)
-    (atom-exp (number) const-atom)
-    (atom-exp (identifier) var-atom)
-    (atom-exp ("(" expr ")") paren-atom)
-  ))
+;; rel-tail: chain of > < >= <=
+(define (cmp->bool op a b)
+  (V-bool (op (expect-number 'compare a)
+              (expect-number 'compare b))))
 
-(sllgen:make-define-datatypes ajs-lexical-spec ajs-grammar)
+(define (eval-rel-tail acc tail rho)
+  (cases rel-tail tail
+    (rel-done () acc)
+    (gt-more (addE rest)
+      (eval-rel-tail (cmp->bool >  acc (eval-additive addE rho)) rest rho))
+    (lt-more (addE rest)
+      (eval-rel-tail (cmp->bool <  acc (eval-additive addE rho)) rest rho))
+    (ge-more (addE rest)
+      (eval-rel-tail (cmp->bool >= acc (eval-additive addE rho)) rest rho))
+    (le-more (addE rest)
+      (eval-rel-tail (cmp->bool <= acc (eval-additive addE rho)) rest rho))))
 
-(define scan  (sllgen:make-string-scanner ajs-lexical-spec ajs-grammar))
-(define parse (sllgen:make-string-parser  ajs-lexical-spec ajs-grammar))
+;; additive-exp -> (add-node multiplicative-exp add-op-tail)
+(define (eval-additive addE rho)
+  (cases additive-exp addE
+    (add-node (mulE tail)
+      (let ([acc (eval-multiplicative mulE rho)])
+        (eval-add-op-tail acc tail rho)))))
 
-(display "parser built successfully")
+(define (eval-add-op-tail acc tail rho)
+  (cases add-op-tail tail
+    (add-done () acc)
+    (add-more (mulE rest)
+      (eval-add-op-tail
+       (arith+ acc (eval-multiplicative mulE rho))
+       rest rho))
+    (sub-more (mulE rest)
+      (eval-add-op-tail
+       (arith- acc (eval-multiplicative mulE rho))
+       rest rho))))
+
+;; multiplicative-exp -> (mul-node unary-exp mul-op-tail)
+(define (eval-multiplicative mulE rho)
+  (cases multiplicative-exp mulE
+    (mul-node (ue tail)
+      (let ([acc (eval-unary-exp ue rho)])
+        (eval-mul-op-tail acc tail rho)))))
+
+(define (eval-mul-op-tail acc tail rho)
+  (cases mul-op-tail tail
+    (mul-done () acc)
+    (mul-more (ue rest)
+      (eval-mul-op-tail
+       (arith* acc (eval-unary-exp ue rho))
+       rest rho))
+    (div-more (ue rest)
+      (eval-mul-op-tail
+       (arith/ acc (eval-unary-exp ue rho))
+       rest rho))))
+
+;; Unary expressions
+(define (eval-unary-exp ue rho)
+  (cases unary-exp ue
+    (simple-unary (primary) (eval-primary-exp primary rho))
+    (neg-exp (ue1) 
+      (let ([v (eval-unary-exp ue1 rho)])
+        (V-num (- (expect-number 'neg v)))))
+    (pos-exp (ue1) 
+      (eval-unary-exp ue1 rho))))
+
+;; Primary expressions (handle function calls)
+(define (eval-primary-exp pe rho)
+  (cases primary-exp pe
+    (call-exp (atom tail)
+      (eval-call-tail (eval-atom-exp atom rho) tail rho))))
+
+;; Call tail evaluation (handles function application)
+(define (eval-call-tail func tail rho)
+  (cases call-tail tail
+    (no-call () func)
+    (more-call (args next-tail)
+      (let* ([closure-parts (expect-closure 'call func)]
+             [params (car closure-parts)]
+             [body (cadr closure-parts)]
+             [closure-env (caddr closure-parts)]
+             [arg-vals (map (lambda (arg) (eval-expr arg rho)) args)])
+        (if (= (length params) (length arg-vals))
+            (let ([result (eval-block body (env-extend* closure-env params arg-vals))])
+              (eval-call-tail result next-tail rho))
+            (eopl:error 'eval-call-tail "Arity mismatch: expected ~a args, got ~a" 
+                       (length params) (length arg-vals)))))))
+
+;; Atom expressions (lowest level, no function calls)
+(define (eval-atom-exp ae rho)
+  (cases atom-exp ae
+    (const-atom (n) (V-num n))
+    (var-atom (id) (env-lookup rho id))
+    (paren-atom (e) (eval-expr e rho))))
+
+;; Numeric ops on ajsvals
+(define (arith+ a b) (V-num (+ (expect-number '+ a) (expect-number '+ b))))
+(define (arith- a b) (V-num (- (expect-number '- a) (expect-number '- b))))
+(define (arith* a b) (V-num (* (expect-number '* a) (expect-number '* b))))
+(define (arith/ a b) (V-num (/ (expect-number '/ a) (expect-number '/ b))))
