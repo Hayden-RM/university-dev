@@ -3,6 +3,7 @@
          "ajstest-utils.rkt")
 (provide (all-defined-out))
 
+(newline)
 (display "=== AJS Tests: arithmetic, const, comparisons, logic, ternary ===")
 (newline)
 
@@ -60,9 +61,20 @@
 ;; Function with multiple statements
 (run "function double(x) { const result = x * 2; return result; } double(8);")                 ; 16
 
+(run "function factorial(n) {
+
+    return n === 1
+
+	       ? 1
+
+		   : n * factorial(n - 1);
+
+} factorial(8);
+function double(x) { const result = x * 2; return result; } double(8);")
+
 (newline)
 (display "--- Assertions ---")
-
+(newline)
 ;; numeric checks
 (check-num "345;" 345)
 (check-num "123 + 45;" 168)
@@ -95,6 +107,14 @@
 (check-num "function square(x) { return x * x; } square(square(3));" 81)
 (check-num "function max(a, b) { return a > b ? a : b; } max(10, 20);" 20)
 (check-num "function double(x) { const result = x * 2; return result; } double(8);" 16)
+
+;; Add this section after the existing function tests
+;; --- Simple Recursion Test ---
+(newline)
+(display "--- Simple Recursion Test ---")
+(newline)
+(run "function simple_rec(n) { return n === 0 ? 0 : simple_rec(n - 1) + 1; } simple_rec(3);")
+
 
 (newline)
 (display "=== End of tests ===")
