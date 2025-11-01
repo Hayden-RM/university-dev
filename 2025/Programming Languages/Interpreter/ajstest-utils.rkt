@@ -1,15 +1,15 @@
 #lang eopl
 (require eopl
-         "ajslang.rkt"              ; provides scan/parse and AST types
-         "ajsdata-structures.rkt"   ; values, env, printers
+         "ajslang.rkt"
+         "ajsdata-structures.rkt"
          "ajsinterp.rkt"
-         (only-in racket/base void))           ; eval-program, etc.
+         (only-in racket/base void))
 (provide (all-defined-out))
 
 ;; EoPL doesn't always export andmap; define it if missing.
 (define (andmap f xs) (if (null? xs) #t (and (f (car xs)) (andmap f (cdr xs)))))
 
-;; --- Value extraction helpers (if not in ajsdata-structures.rkt) ---
+;; --- Value extraction helpers ---
 
 ;; Extract number from ajsval
 (define (expect-number proc-name val)
@@ -98,7 +98,7 @@
     (bool-val (b)  (display (if b "true" "false")) (newline))
     (str-val (s)   (display "\"") (display s) (display "\"") (newline))
     (null-val ()   (display "null") (newline))
-    (closure-val (p b e) (display "<function>") (newline))))
+    (closure-val (params body env) (display "<function>") (newline))))
 
 (newline)
 (display "test-utils built successfully")
