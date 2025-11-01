@@ -15,10 +15,10 @@
 
     ;; numbers: UNSIGNED WHOLE NUMBERS ONLY
     ;; one-or-more digits = digit (arbno digit)
-    (number
-     (digit (arbno digit))
-     number)
-
+    (number (digit (arbno digit)) number)
+    (number (digit (arbno digit) #\. digit (arbno digit)) number)
+    (number (#\. digit (arbno digit)) number)
+    (number (digit (arbno digit) #\.) number)
     ;; simple strings (kept for later use)
     (string
      (#\" (arbno (not #\")) #\")
