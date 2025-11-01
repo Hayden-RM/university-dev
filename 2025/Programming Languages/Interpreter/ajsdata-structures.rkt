@@ -170,5 +170,6 @@
 (define (raise-return v)
   (raise (make-return-exn v)))
 
-
+(newline)
+(display "data-structures built successfully")
 
