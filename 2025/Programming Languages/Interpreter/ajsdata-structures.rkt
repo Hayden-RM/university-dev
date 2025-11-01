@@ -114,9 +114,10 @@
     (bool-val (b) b)
     (else (eopl:error who "expected boolean, got ~s" v))))
 
+;; In ajsdata-structures.rkt, replace expect-closure:
 (define (expect-closure who v)
   (cases ajsval v
-    (closure-val (ps body rho) (values ps body rho))
+    (closure-val (ps body rho) (list ps body rho))
     (else (eopl:error who "expected function/closure, got ~s" v))))
 
 ;; JS-like truthiness (minimal subset we need)
