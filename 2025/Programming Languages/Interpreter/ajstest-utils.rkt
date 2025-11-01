@@ -9,6 +9,20 @@
 ;; EoPL doesn't always export andmap; define it if missing.
 (define (andmap f xs) (if (null? xs) #t (and (f (car xs)) (andmap f (cdr xs)))))
 
+;; --- Value extraction helpers (if not in ajsdata-structures.rkt) ---
+
+;; Extract number from ajsval
+(define (expect-number proc-name val)
+  (cases ajsval val
+    (num-val (n) n)
+    (else (eopl:error proc-name "Expected number, got ~s" val))))
+
+;; Extract boolean from ajsval
+(define (expect-boolean proc-name val)
+  (cases ajsval val
+    (bool-val (b) b)
+    (else (eopl:error proc-name "Expected boolean, got ~s" val))))
+
 ;; --- Core runners ------------------------------------------------------------
 
 ;; parse-ajs : string -> Program AST (errors if parse fails)
@@ -27,7 +41,7 @@
     (for-each ajs-print outs)
     (void)))
 
-;; --- Tiny assertion helpers (phase 1: numeric only) --------------------------
+;; --- Tiny assertion helpers --------------------------
 
 ;; Extract number from a single-output run
 (define (only-num-out s)
@@ -37,6 +51,14 @@
       [(pair? (cdr outs)) (eopl:error 'only-num-out "expected one output, got ~a" (length outs))]
       [else (expect-number 'only-num-out (car outs))])))
 
+;; Extract boolean from a single-output run
+(define (only-bool-out s)
+  (let ([outs (eval-ajs s)])
+    (cond
+      [(null? outs) (eopl:error 'only-bool-out "no output produced by program")]
+      [(pair? (cdr outs)) (eopl:error 'only-bool-out "expected one output, got ~a" (length outs))]
+      [else (expect-boolean 'only-bool-out (car outs))])))
+
 ;; helper: print OK line without string-append on numbers
 (define (say-ok program-str expected)
   (display "OK  : ")
@@ -44,12 +66,20 @@
   (display " ==> ")
   (display expected))
 
+;; Numeric assertion
 (define (check-num program-str expected)
   (let ([got (only-num-out program-str)])
     (if (equal? got expected)
-        (say-ok program-str expected)
+        (begin (say-ok program-str expected) (newline))
         (eopl:error 'check-num "FAIL: ~a ==> got ~a, expected ~a" program-str got expected))))
 
+;; Boolean assertion
+(define (check-bool program-str expected-bool)
+  (let ([got (only-bool-out program-str)])
+    (if (eq? got expected-bool)
+        (begin (display "OK  : ") (display program-str)
+               (display " ==> ") (display (if got "true" "false")))
+        (eopl:error 'check-bool "FAIL: ~a ==> got ~a, expected ~a" program-str got expected-bool))))
 
 ;; check-many : (listof (list program-str expected-number)) -> void
 (define (check-many cases)
@@ -69,3 +99,6 @@
     (str-val (s)   (display "\"") (display s) (display "\"") (newline))
     (null-val ()   (display "null") (newline))
     (closure-val (p b e) (display "<function>") (newline))))
+
+(newline)
+(display "test-utils built successfully")
