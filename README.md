@@ -1,4 +1,4 @@
-< Highlighted Projects >
+< Quick Links >
 - JavaScript Interpreter (Racket) [ [Link](https://github.com/Hayden-RM/university-dev/tree/main/2025/Programming%20Languages/Interpreter) ]
 - Unlimited Register Machine (URM) (Java) [ [Link](https://github.com/Hayden-RM/university-dev/tree/main/2025/Theory%20of%20Computation/Unlimited%20Register%20Machine%20(URM)) ]
 - Booking System Web Page(s) + Database Management (PHP, HTML, CSS, JavaScript, SQL) [ [Link](https://github.com/Hayden-RM/university-dev/tree/main/2025/Web%20Development)]
