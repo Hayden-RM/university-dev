@@ -9,6 +9,9 @@
   '((whitespace (whitespace) skip)                    ; Skip whitespace
     (comment ("//" (arbno (not #\newline))) skip)     ; Skip single-line comments
 
+    ;; Keywords
+    (keyword ("true" "false" "const" "function" "return" "if" "else") symbol)
+
     ;; Identifiers: start with letter/underscore/dollar, then letters/digits/underscore/dollar
     (identifier
      ((or letter #\_ #\$)
@@ -39,6 +42,12 @@
     (statement ("function" identifier "(" (separated-list identifier ",") ")" block) fun-stmt) ; Function declaration
     (statement ("return" expr ";") return-stmt)                       ; Return statement
     (statement (expr ";") expr-stmt)                                  ; Expression statement
+    (statement (block)                                      block-stmt)
+    ;; if with optional else (LL(1)-friendly)
+    (statement ("if" "(" expr ")" block if-tail)             if-stmt)
+
+    (if-tail ("else" block)                                  has-else)
+    (if-tail ()                                              no-else)
 
     ;; Block: group of statements in braces
     (block ("{" (arbno statement) "}") a-block)
@@ -99,6 +108,8 @@
 
     ;; Atomic expressions (lowest level, cannot be followed by calls)
     (atom-exp (number) const-atom)                                    ; Numeric literal
+    (atom-exp ("true") true-atom)                                     ; Boolean true literal
+    (atom-exp ("false") false-atom)                                   ; Boolean false literal
     (atom-exp (identifier) var-atom)                                  ; Variable reference
     (atom-exp ("(" expr ")") paren-atom)                              ; Parenthesized expression
   ))
@@ -108,11 +119,7 @@
 ;; Generate datatypes from the lexical and grammar specifications
 (sllgen:make-define-datatypes ajs-lexical-spec ajs-grammar)
 
-;; Create scanner for tokenizing input strings
 (define scan  (sllgen:make-string-scanner ajs-lexical-spec ajs-grammar))
-
-;; Create parser for converting tokens to abstract syntax trees
 (define parse (sllgen:make-string-parser  ajs-lexical-spec ajs-grammar))
 
-;; ========== INITIALIZATION MESSAGE ==========
-(display "parser built successfully")
+(display "parser built successfully with explicit boolean atoms\n")
