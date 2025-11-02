@@ -1,4 +1,17 @@
 #lang eopl
+<<<<<<< Updated upstream
+=======
+
+#|
+
+NAME: Hayden Richard-Marsters
+COMP712 > Interpreter Project
+STUDENT ID: 21152003
+CONTACT: qjn4504@autuni.ac.nz
+
+|#
+
+>>>>>>> Stashed changes
 (require "ajslang.rkt"
          "ajsdata-structures.rkt")
 (provide (all-defined-out))
@@ -297,3 +310,9 @@
 (define (arith- a b) (V-num (- (expect-number '- a) (expect-number '- b))))
 (define (arith* a b) (V-num (* (expect-number '* a) (expect-number '* b))))
 (define (arith/ a b) (V-num (/ (expect-number '/ a) (expect-number '/ b))))
+<<<<<<< Updated upstream
+=======
+
+(newline)
+(display "interpreter built successfully")
+>>>>>>> Stashed changes

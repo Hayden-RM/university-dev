@@ -1,4 +1,17 @@
 #lang eopl
+<<<<<<< Updated upstream
+=======
+
+#|
+
+NAME: Hayden Richard-Marsters
+COMP712 > Interpreter Project
+STUDENT ID: 21152003
+CONTACT: qjn4504@autuni.ac.nz
+
+|#
+
+>>>>>>> Stashed changes
 (require eopl)
 (provide (all-defined-out))
 
@@ -184,4 +197,8 @@
 
 ;; ========== INITIALIZATION MESSAGE ==========
 (newline)
+<<<<<<< Updated upstream
 (display "data-structures built successfully")
+=======
+(display "data-structures built successfully")
+>>>>>>> Stashed changes

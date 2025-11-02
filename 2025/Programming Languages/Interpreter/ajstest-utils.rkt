@@ -1,4 +1,14 @@
 #lang eopl
+
+#|
+
+NAME: Hayden Richard-Marsters
+COMP712 > Interpreter Project
+STUDENT ID: 21152003
+CONTACT: qjn4504@autuni.ac.nz
+
+|#
+
 (require eopl
          "ajslang.rkt"
          "ajsdata-structures.rkt"
@@ -98,4 +108,8 @@
 
 ;; ========== INITIALIZATION ==========
 (newline)
+<<<<<<< Updated upstream
 (display "test-utils built successfully")
+=======
+(display "test-utils built successfully")
+>>>>>>> Stashed changes

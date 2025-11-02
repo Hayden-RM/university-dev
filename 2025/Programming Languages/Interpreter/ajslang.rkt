@@ -1,4 +1,14 @@
 #lang eopl
+
+#|
+
+NAME: Hayden Richard-Marsters
+COMP712 > Interpreter Project
+STUDENT ID: 21152003
+CONTACT: qjn4504@autuni.ac.nz
+
+|#
+
 (require eopl)
 (provide (all-defined-out))
 
@@ -122,4 +132,8 @@
 (define scan  (sllgen:make-string-scanner ajs-lexical-spec ajs-grammar))
 (define parse (sllgen:make-string-parser  ajs-lexical-spec ajs-grammar))
 
+<<<<<<< Updated upstream
 (display "parser built successfully with explicit boolean atoms\n")
+=======
+(display "parser built successfully")
+>>>>>>> Stashed changes

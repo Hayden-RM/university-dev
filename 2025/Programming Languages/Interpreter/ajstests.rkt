@@ -1,4 +1,14 @@
 #lang eopl
+
+#|
+
+NAME: Hayden Richard-Marsters
+COMP712 > Interpreter Project
+STUDENT ID: 21152003
+CONTACT: qjn4504@autuni.ac.nz
+
+|#
+
 (require eopl
          "ajstest-utils.rkt")
 (provide (all-defined-out))
@@ -167,3 +177,7 @@
 (newline)
 (display "=== ALL TESTS COMPLETE ===")
 (newline)
+<<<<<<< Updated upstream
+=======
+
+>>>>>>> Stashed changes
