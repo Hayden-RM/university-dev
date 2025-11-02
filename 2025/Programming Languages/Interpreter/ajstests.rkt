@@ -127,6 +127,32 @@
 ;; Test 17: Binary recursion
 (check-num "function bin_recur(n) { return n === 0 ? 0 : n === 1 ? 1 : bin_recur(n - 1) + bin_recur(n - 2); } bin_recur(5);" 5)
 
+(display "========== if / else tests =======")
+(newline)
+;; ========== if / else tests =======
+(newline)
+(display "=== if / else tests ===")
+(newline)
+
+;; These should all produce output
+(check-num "if (true) { 42; }" 42)
+(check-num "if (true) { 42; } else { 24; }" 42)
+(check-num "if (false) { 42; } else { 24; }" 24)
+(check-num "if (true) { if (false) { 1; } else { 2; } } else { 3; }" 2)
+(check-num "if (3 > 2) { 42; } else { 24; }" 42)
+(check-num "if (3 < 2) { 42; } else { 24; }" 24)
+(check-num "const x = 5; if (x > 3) { x * 2; } else { x; }" 10)
+(check-num "const x = 2; if (x > 3) { x * 2; } else { x; }" 2)
+(check-num "const x = 5; const y = 10; if (x > 0) { if (y > 5) { x + y; } else { x; } } else { 0; }" 15)
+
+;; Test for no output case separately
+(display "Testing if (false) { 42; } - should produce no output: ")
+(let ([outs (eval-ajs "if (false) { 42; }")])
+  (if (null? outs)
+      (display "CORRECT") 
+      (display "INCORRECT"))
+  (newline))
+
 (newline)
 (display "=== ALL TESTS COMPLETE ===")
 (newline)
