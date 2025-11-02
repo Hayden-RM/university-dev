@@ -34,37 +34,64 @@
                         [out? (step-out result)])
                     (loop (cdr ss) rho2 (if out? (cons out? outs) outs))))))))))
 
-;; Evaluate a single statement, return (env . output) pair
 (define (eval-statement s rho)
   (cases statement s
+    ;; const x = e;
     (const-stmt (id e)
-      ;; Define constant: evaluate expression and extend environment
       (let ([v (eval-expr e rho)])
         (step (env-extend1 rho id v) #f)))
+
+    ;; function f(...) { ... }
     (fun-stmt (id params body)
-      ;; Define function: create recursive closure and extend environment
       (let ([closure (V-rec-clos id params body rho)])
         (step (env-extend1 rho id closure) #f)))
+
+    ;; return e;
     (return-stmt (e)
-      ;; Return statement: create return exception to propagate value
       (make-return-exn (eval-expr e rho)))
+
+    ;; expr;
     (expr-stmt (e)
-      ;; Expression statement: evaluate and return as output
-      (step rho (eval-expr e rho)))))
+      (step rho (eval-expr e rho)))
+
+    ;; { ... }  (block as a statement)
+    (block-stmt (blk)
+      (let ([result (eval-block blk rho)])
+        (if (return-exn? result)
+            result  ; Propagate return exception
+            (step rho #f))))
+
+    ;; if (cond) { ... } [else { ... }]
+    (if-stmt (condE thenB tail)
+      (let ([condv (eval-expr condE rho)])
+        (cases if-tail tail
+          (has-else (elseB)
+            (let ([result (if (truthy? condv)
+                              (eval-block thenB rho)
+                              (eval-block elseB rho))])
+              (if (return-exn? result)
+                  result  ; Propagate return exception
+                  (step rho result))))  ; Use the block result as output
+          (no-else ()
+            (if (truthy? condv)
+                (let ([result (eval-block thenB rho)])
+                  (if (return-exn? result)
+                      result  ; Propagate return exception
+                      (step rho result)))  ; Use the block result as output
+                (step rho #f))))))))  ; No else, no output
 
 ;; ========== BLOCK EVALUATION WITH RETURN HANDLING ==========
 
-;; Evaluate a block of statements, handling return statements
 (define (eval-block b rho)
   (cases block b
     (a-block (stmts)
-      (let loop ((ss stmts) (current-env rho) (last-out (V-null)))
+      (let loop ((ss stmts) (env rho) (last-out (V-null)))
         (if (null? ss)
             last-out  ; Return last evaluated expression value
-            (let ([result (eval-statement (car ss) current-env)])
+            (let ([result (eval-statement (car ss) env)])
               (cond
                 [(return-exn? result) 
-                 (return-exn-value result)]  ; Propagate return value upward
+                 result]  ; Propagate return exception upward
                 [else
                  ;; Continue with updated environment and track last output
                  (let ([new-env (step-env result)]
@@ -238,11 +265,17 @@
                 (let ([new-env (env-extend* closure-env params arg-vals)])
                   (let ([rec-env (env-extend1 new-env func-name func)])
                     (let ([result (eval-block body rec-env)])
-                      (eval-call-tail result next-tail rho)))))
+                      ;; FIX: Check if result is a return-exn and extract value
+                      (if (return-exn? result)
+                          (eval-call-tail (return-exn-value result) next-tail rho)
+                          (eval-call-tail result next-tail rho))))))
               (else
                 ;; Regular closure: extend environment with arguments only
                 (let ([result (eval-block body (env-extend* closure-env params arg-vals))])
-                  (eval-call-tail result next-tail rho))))
+                  ;; FIX: Check if result is a return-exn and extract value
+                  (if (return-exn? result)
+                      (eval-call-tail (return-exn-value result) next-tail rho)
+                      (eval-call-tail result next-tail rho)))))
             (eopl:error 'eval-call-tail "Arity mismatch: expected ~a args, got ~a" 
                        (length params) (length arg-vals)))))))
 
@@ -252,6 +285,8 @@
 (define (eval-atom-exp ae rho)
   (cases atom-exp ae
     (const-atom (n) (V-num n))          ; Numeric literal
+    (true-atom () (V-bool #t))          ; Boolean true literal
+    (false-atom () (V-bool #f))         ; Boolean false literal
     (var-atom (id) (env-lookup rho id)) ; Variable lookup
     (paren-atom (e) (eval-expr e rho)))) ; Parenthesized expression
 
