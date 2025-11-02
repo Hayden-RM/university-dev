@@ -153,6 +153,17 @@
       (display "INCORRECT"))
   (newline))
 
+;; ================= Operator Precedence Tests =================
+(newline)
+(display "=== Operator Precedence Tests ===")
+(newline)
+
+(check-num "1 + 2 * 3;" 7)        ; Multiplication before addition
+(check-num "(1 + 2) * 3;" 9)      ; Parentheses override
+(check-num "5 - 3 - 1;" 1)        ; Left associativity of subtraction
+(check-num "12 / 3 / 2;" 2)       ; Left associativity of division
+(check-num "2 * 3 + 4 * 5;" 26)   ; Mixed precedence
+
 (newline)
 (display "=== ALL TESTS COMPLETE ===")
 (newline)
